@@ -35,28 +35,29 @@ def api_data_pull():
         partition = ('People/year%s/month%s/day%s'%(str(current.year),str(current.month),str(current.day)))
 
         if Dict.get(partition,'Missing')=='Missing':
-                Dict[partition] = "first_name,last_name\n"
+                Dict[partition] = "first_name,last_name,date_inserted\n"
         
         Dict[partition] += \
         '"'+str(firstname)+'",' \
-        '"'+str(lastname)+'"\n'
+        '"'+str(lastname)+'",' \
+        '"'+str(current)+'"\n'
 
         with open(filename,"w") as f:
                 for partkey in Dict:
                     f.write(Dict[partkey])
-                    print('Successfully saved to csv')
+                    
 
 def db_data_insert():
 
     csv_name = filename
-    table_name = "zunaid"
+    table_name = "tbl_people_space"
 
     quoted = urllib.parse.quote_plus('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+db_instance_name+';DATABASE='+db_name+';Trusted_Connection=yes')
     engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
 
     df = pd.read_csv(csv_name,engine='python',index_col=False)
 
-    df.to_sql(table_name,schema='dbo',con=engine,if_exists='replace',index=False)
+    df.to_sql(table_name,schema='dbo',con=engine,if_exists='append',index=False)
     print('Done with import')
 
 
